@@ -195,3 +195,7 @@ app.add_handler(
 print("✅ SuperDoctor_AI ishga tushdi.")
 
 app.run_polling()
+from bmi import calculate_bmi
+from water import calculate_water
+from medicines import get_medicine
+from diseases import get_disease
