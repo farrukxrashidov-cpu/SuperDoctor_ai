@@ -1,22 +1,13 @@
-import json
-
-with open("data/medicines.json", "r", encoding="utf-8") as f:
-    MEDICINES = json.load(f)
-
+MEDICINES = {
+    "paracetamol": {
+        "foydalanish": "Isitma va og'riqni kamaytiradi.",
+        "ogohlantirish": "Dozani oshirmang."
+    },
+    "ibuprofen": {
+        "foydalanish": "Og'riq va yallig'lanishga qarshi.",
+        "ogohlantirish": "Oshqozon yarasi bo'lsa ehtiyot bo'ling."
+    }
+}
 
 def get_medicine(name):
     return MEDICINES.get(name.lower())
-
-
-def search_medicine(keyword):
-    keyword = keyword.lower()
-
-    result = []
-
-    for medicine in MEDICINES:
-
-        if keyword in medicine:
-
-            result.append(medicine)
-
-    return result[:10]
