@@ -18,6 +18,8 @@ from database import add_user
 from first_aid import get_topics, get_first_aid
 from hospitals import get_nearby_hospitals
 from pharmacy import get_nearby_pharmacies
+from medicines import get_medicine
+from diseases import get_disease
 MENU = [
     ["🤖 AI Shifokor", "🚑 Birinchi yordam"],
     ["🏥 Kasalliklar", "💊 Dorilar"],
