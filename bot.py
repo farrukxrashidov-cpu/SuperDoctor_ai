@@ -62,10 +62,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = update.message.text
          # Profil
         if text == "👤 Profil":
-        await update.message.reply_text(
+            await update.message.reply_text(
             get_profile(update.effective_user)
         )
-        return
+            return
 
     # AI
     if text == "🤖 AI Shifokor":
