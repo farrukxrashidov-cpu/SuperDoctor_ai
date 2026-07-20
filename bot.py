@@ -22,6 +22,7 @@ from medicines import get_medicine
 from diseases import get_disease
 from pharmacy import get_nearby_pharmacies
 from hospitals import get_nearby_hospitals
+from profile import get_profile
 MENU = [
     ["🤖 AI Shifokor", "🚑 Birinchi yordam"],
     ["🏥 Kasalliklar", "💊 Dorilar"],
