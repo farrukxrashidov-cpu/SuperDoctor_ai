@@ -58,27 +58,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=keyboard
     )
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    user = update.effective_user
-
-    add_user(
-        user.id,
-        user.full_name,
-        user.username
-    )
-
-    keyboard = ReplyKeyboardMarkup(
-        MENU,
-        resize_keyboard=True
-    )
-
-    await update.message.reply_text(
-        "👨‍⚕️ SuperDoctor_AI ga xush kelibsiz!\n\n"
-        "Kerakli bo'limni tanlang.",
-        reply_markup=keyboard
-    )
-    
     async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
