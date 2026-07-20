@@ -79,7 +79,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=keyboard
     )
     
-        async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
     # Profil
