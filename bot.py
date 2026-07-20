@@ -23,14 +23,15 @@ from diseases import get_disease
 from pharmacy import get_nearby_pharmacies
 from hospitals import get_nearby_hospitals
 from profile import get_profile
+
 MENU = [
     ["🤖 AI Shifokor", "🚑 Birinchi yordam"],
     ["🏥 Kasalliklar", "💊 Dorilar"],
     ["📍 Shifoxona", "💊 Dorixona"],
     ["❤️ BMI", "💧 Suv"],
-    ["🆘 SOS", "ℹ️ Bot haqida"]
+    ["👤 Profil", "🆘 SOS"],
+    ["ℹ️ Bot haqida"]
 ]
-
 LOCATION_BUTTON = ReplyKeyboardMarkup(
     [[KeyboardButton("📍 Lokatsiyani yuborish", request_location=True)]],
     resize_keyboard=True
