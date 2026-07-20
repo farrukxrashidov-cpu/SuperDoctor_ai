@@ -20,6 +20,8 @@ from hospitals import get_nearby_hospitals
 from pharmacy import get_nearby_pharmacies
 from medicines import get_medicine
 from diseases import get_disease
+from pharmacy import get_nearby_pharmacies
+from hospitals import get_nearby_hospitals
 MENU = [
     ["🤖 AI Shifokor", "🚑 Birinchi yordam"],
     ["🏥 Kasalliklar", "💊 Dorilar"],
@@ -207,7 +209,58 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # KEYIN ESA OLDINGI KODLAR DAVOM ETADI
 print("✅ SuperDoctor_AI ishga tushdi.")
+# Kasallik qidirish
+if text == "🏥 Kasalliklar":
 
+    await update.message.reply_text(
+        "🔍 Kasallik nomini yozing.\n\n"
+        "Masalan:\nGripp"
+    )
+
+    context.user_data["mode"] = "disease"
+    return
+
+
+# Dori qidirish
+if text == "💊 Dorilar":
+
+    await update.message.reply_text(
+        "💊 Dori nomini yozing.\n\n"
+        "Masalan:\nParacetamol"
+    )
+
+    context.user_data["mode"] = "medicine"
+    return
+
+
+# Kasallik ma'lumotlari
+if context.user_data.get("mode") == "disease":
+
+    disease = get_disease(text)
+
+    if disease:
+        await update.message.reply_text(str(disease))
+    else:
+        await update.message.reply_text(
+            "❌ Kasallik topilmadi."
+        )
+
+    return
+
+
+# Dori ma'lumotlari
+if context.user_data.get("mode") == "medicine":
+
+    medicine = get_medicine(text)
+
+    if medicine:
+        await update.message.reply_text(str(medicine))
+    else:
+        await update.message.reply_text(
+            "❌ Dori topilmadi."
+        )
+
+    return 
 app.run_polling()
 from bmi import calculate_bmi
 from water import calculate_water
