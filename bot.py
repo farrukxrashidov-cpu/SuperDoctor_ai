@@ -191,7 +191,19 @@ app.add_handler(
         handle_message
     )
 )
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
+    text = update.message.text
+
+    # SHU YERGA MEN YUBORGAN BMI VA SUV KODINI QO'YASAN
+
+    if text == "❤️ BMI":
+        ...
+
+    if text == "💧 Suv":
+        ...
+
+    # KEYIN ESA OLDINGI KODLAR DAVOM ETADI
 print("✅ SuperDoctor_AI ishga tushdi.")
 
 app.run_polling()
