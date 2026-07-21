@@ -9,7 +9,7 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     ContextTypes,
-    filters,
+    filters
 )
 
 from config import BOT_TOKEN
@@ -23,6 +23,7 @@ from diseases import get_disease
 from profile import get_profile
 from bmi import calculate_bmi
 from water import calculate_water
+
 
 MENU = [
     ["🤖 AI Shifokor", "🚑 Birinchi yordam"],
@@ -38,19 +39,14 @@ LOCATION_BUTTON = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    add_user(user.id, user.full_name, user.username)
 
-    add_user(
-        user.id,
-        user.full_name,
-        user.username
-    )
+    context.user_data["mode"] = None
 
-    keyboard = ReplyKeyboardMarkup(
-        MENU,
-        resize_keyboard=True
-    )
+    keyboard = ReplyKeyboardMarkup(MENU, resize_keyboard=True)
 
     await update.message.reply_text(
         "👨‍⚕️ SuperDoctor_AI ga xush kelibsiz!\n\n"
@@ -58,16 +54,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=keyboard
     )
 
-    async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        text = update.message.text
-         # Profil
-        if text == "👤 Profil":
-            await update.message.reply_text(
-            get_profile(update.effective_user)
-        )
-            return
 
-    # AI
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    # ===== Profil =====
+    if text == "👤 Profil":
+        await update.message.reply_text(get_profile(update.effective_user))
+        return
+
+    # ===== AI Shifokor =====
     if text == "🤖 AI Shifokor":
         await update.message.reply_text(
             "🩺 Alomatlaringizni yozing.\n\n"
@@ -77,21 +73,74 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["mode"] = "ai"
         return
 
-    # Birinchi yordam
+    # ===== Birinchi yordam =====
     if text == "🚑 Birinchi yordam":
         keyboard = [[i] for i in get_topics()]
         keyboard.append(["🔙 Orqaga"])
-
         await update.message.reply_text(
             "Kerakli holatni tanlang.",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard,
-                resize_keyboard=True
-            )
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
         return
 
-    # SOS
+    if text in get_topics():
+        await update.message.reply_text(get_first_aid(text))
+        return
+
+    # ===== Kasalliklar =====
+    if text == "🏥 Kasalliklar":
+        await update.message.reply_text(
+            "🔍 Kasallik nomini yozing.\n\nMasalan:\nGripp"
+        )
+        context.user_data["mode"] = "disease"
+        return
+
+    # ===== Dorilar =====
+    if text == "💊 Dorilar":
+        await update.message.reply_text(
+            "💊 Dori nomini yozing.\n\nMasalan:\nParacetamol"
+        )
+        context.user_data["mode"] = "medicine"
+        return
+
+    # ===== Shifoxona (lokatsiya so'raladi) =====
+    if text == "📍 Shifoxona":
+        context.user_data["mode"] = "hospital"
+        await update.message.reply_text(
+            "📍 Eng yaqin shifoxonalarni topish uchun lokatsiyangizni yuboring.",
+            reply_markup=LOCATION_BUTTON
+        )
+        return
+
+    # ===== Dorixona (lokatsiya so'raladi) =====
+    if text == "💊 Dorixona":
+        context.user_data["mode"] = "pharmacy"
+        await update.message.reply_text(
+            "📍 Eng yaqin dorixonalarni topish uchun lokatsiyangizni yuboring.",
+            reply_markup=LOCATION_BUTTON
+        )
+        return
+
+    # ===== BMI =====
+    if text == "❤️ BMI":
+        await update.message.reply_text(
+            "❤️ BMI kalkulyatori\n\n"
+            "Quyidagi formatda yuboring:\n\n"
+            "70 175\n\n"
+            "(Vazn kg va bo'y sm)"
+        )
+        context.user_data["mode"] = "bmi"
+        return
+
+    # ===== Suv =====
+    if text == "💧 Suv":
+        await update.message.reply_text(
+            "💧 Vazningizni kiriting.\n\nMasalan:\n70"
+        )
+        context.user_data["mode"] = "water"
+        return
+
+    # ===== SOS =====
     if text == "🆘 SOS":
         await update.message.reply_text(
             "🚨 Agar bemor:\n\n"
@@ -103,7 +152,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Bot haqida
+    # ===== Bot haqida =====
     if text == "ℹ️ Bot haqida":
         await update.message.reply_text(
             "👨‍⚕️ SuperDoctor_AI\n\n"
@@ -111,149 +160,97 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Orqaga
+    # ===== Orqaga =====
     if text == "🔙 Orqaga":
         await start(update, context)
         return
 
-    # Birinchi yordam mavzusi
-    if text in get_topics():
-        await update.message.reply_text(
-            get_first_aid(text)
-        )
-        return
+    mode = context.user_data.get("mode")
 
-    # AI javobi
-    if context.user_data.get("mode") == "ai":
+    # ===== AI rejimi =====
+    if mode == "ai":
         answer = ask_ai(text)
         await update.message.reply_text(answer)
         return
 
-    await update.message.reply_text(
-        "Iltimos, menyudan bo'lim tanlang."
-    )
+    # ===== Kasallik qidirish =====
+    if mode == "disease":
+        disease = get_disease(text)
+        if disease:
+            await update.message.reply_text(str(disease))
+        else:
+            await update.message.reply_text("❌ Kasallik topilmadi.")
+        return
 
-    
-    # ====== LOCATION ======
+    # ===== Dori qidirish =====
+    if mode == "medicine":
+        medicine = get_medicine(text)
+        if medicine:
+            await update.message.reply_text(str(medicine))
+        else:
+            await update.message.reply_text("❌ Dori topilmadi.")
+        return
+
+    # ===== BMI hisoblash =====
+    if mode == "bmi":
+        try:
+            weight_str, height_str = text.split()
+            weight = float(weight_str)
+            height = float(height_str)
+            result = calculate_bmi(weight, height)
+            await update.message.reply_text(str(result))
+        except ValueError:
+            await update.message.reply_text(
+                "❌ Format xato. Masalan: 70 175"
+            )
+        context.user_data["mode"] = None
+        return
+
+    # ===== Suv hisoblash =====
+    if mode == "water":
+        try:
+            weight = float(text)
+            result = calculate_water(weight)
+            await update.message.reply_text(str(result))
+        except ValueError:
+            await update.message.reply_text("❌ Format xato. Masalan: 70")
+        context.user_data["mode"] = None
+        return
+
+    await update.message.reply_text("Iltimos, menyudan bo'lim tanlang.")
+
+
 async def location(update: Update, context: ContextTypes.DEFAULT_TYPE):
     latitude = update.message.location.latitude
     longitude = update.message.location.longitude
+    mode = context.user_data.get("mode")
 
     await update.message.reply_text(
         f"📍 Lokatsiya qabul qilindi.\n\n"
         f"Latitude: {latitude}\n"
-        f"Longitude: {longitude}"
+        f"Longitude: {longitude}\n\n"
+        "🔎 Qidirilmoqda..."
     )
 
-    hospitals = get_nearby_hospitals(latitude, longitude)
-    pharmacies = get_nearby_pharmacies(latitude, longitude)
-
-    await update.message.reply_text(
-        f"🏥 Eng yaqin shifoxonalar:\n\n{hospitals}\n\n"
-        f"💊 Eng yaqin dorixonalar:\n\n{pharmacies}"
-    )
-
-
-async def bmi(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "❤️ Vazn (kg) va bo'yingizni (sm) yuboring.\n\n"
-        "Misol:\n70 175"
-    )
-    context.user_data["mode"] = "bmi"
-
-
-async def water(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "💧 Vazningizni kiriting.\n\n"
-        "Misol:\n70"
-    )
-    context.user_data["mode"] = "water"
-
-
-
-# ====== APPLICATION ======
-
-app = Application.builder().token(BOT_TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-
-app.add_handler(MessageHandler(filters.LOCATION, location))
-
-app.add_handler(
-    MessageHandler(
-        filters.TEXT & ~filters.COMMAND,
-        handle_message
-        
-    )
-)
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    text = update.message.text
-
-    # SHU YERGA MEN YUBORGAN BMI VA SUV KODINI QO'YASAN
-
-    if text == "❤️ BMI":
-        ...
-
-    if text == "💧 Suv":
-        ...
-
-    # KEYIN ESA OLDINGI KODLAR DAVOM ETADI
-print("✅ SuperDoctor_AI ishga tushdi.")
-# Kasallik qidirish
-if text == "🏥 Kasalliklar":
-
-    await update.message.reply_text(
-        "🔍 Kasallik nomini yozing.\n\n"
-        "Masalan:\nGripp"
-    )
-
-    context.user_data["mode"] = "disease"
-    return
-
-
-# Dori qidirish
-if text == "💊 Dorilar":
-
-    await update.message.reply_text(
-        "💊 Dori nomini yozing.\n\n"
-        "Masalan:\nParacetamol"
-    )
-
-    context.user_data["mode"] = "medicine"
-    return
-
-
-# Kasallik ma'lumotlari
-if context.user_data.get("mode") == "disease":
-
-    disease = get_disease(text)
-
-    if disease:
-        await update.message.reply_text(str(disease))
+    if mode == "pharmacy":
+        results = get_nearby_pharmacies(latitude, longitude)
     else:
-        await update.message.reply_text(
-            "❌ Kasallik topilmadi."
-        )
+        results = get_nearby_hospitals(latitude, longitude)
 
-    return
+    await update.message.reply_text(str(results))
+    context.user_data["mode"] = None
 
 
-# Dori ma'lumotlari
-if context.user_data.get("mode") == "medicine":
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
 
-    medicine = get_medicine(text)
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.LOCATION, location))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    if medicine:
-        await update.message.reply_text(str(medicine))
-    else:
-        await update.message.reply_text(
-            "❌ Dori topilmadi."
-        )
+    print("✅ SuperDoctor_AI ishga tushdi.")
+    app.run_polling()
 
-    return 
-app.run_polling()
-from bmi import calculate_bmi
-from water import calculate_water
-from medicines import get_medicine
-from diseases import get_disease
+
+if __name__ == "__main__":
+    main()
